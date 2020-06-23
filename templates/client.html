@@ -1,0 +1,52 @@
+{% extends 'client_base.html' %}
+
+
+
+{% block title %}
+Main title
+{% endblock %}
+
+{% block name %}
+{{ email }}
+{% endblock %}
+
+{% block source %}
+<div class="container-fluid">
+      <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="ml-4 text-dark" href="#">
+                  Reports
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="ml-4 text-dark" href="#">
+                  Upload Files
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-warning">
+              <span>Saved reports</span>
+              <a class="d-flex align-items-center text-muted" href="#">
+              </a>
+            </h6>
+            <ul class="nav flex-column mb-4">
+              <li class="nav-item">
+                <a class="ml-4 text-dark" href="#">
+                  Current month
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="ml-4 text-dark" href="#">
+                  Last quarter
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div>
+{% endblock %}
