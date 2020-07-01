@@ -1,8 +1,6 @@
-from flask import Flask, render_template, url_for, request, redirect, flash
+from flask import Flask, render_template, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from models import Verification
-import os
-
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notilyze.db'
@@ -18,6 +16,15 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.id
+
+
+class File(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    data = db.Column(db.LargeBinary, nullable=False)
+
+    def __repr__(self):
+        return '<File %r>' % self.name
 
 
 class Report(db.Model):
@@ -49,7 +56,7 @@ def sign_in():
             user = User.query.filter_by(e_mail=email).filter_by(password=password).first()
             v.Verificate(user.id)
             return redirect(f'/client_page/{user.id}')
-        except:
+        except NotImplemented:
             return "Error"
     return render_template('sign_in.html')
 
@@ -65,7 +72,7 @@ def registration():
             db.session.add(user)
             db.session.commit()
             return redirect('/signin')
-        except:
+        except NotImplemented:
             return "Error"
     else:
         return render_template('registration.html')
@@ -116,19 +123,10 @@ def upload():
         if request.method == 'POST':
             file = request.files['file']
             if file and file.filename.split('.')[1] in permitted_files:
-                if os.path.exists(f'storage/{v.id}'):
-                    upload_file = file.read()
-                    new_file = open(f'storage/{v.id}/{file.filename}', 'wb')
-                    new_file.write(upload_file)
-                    new_file.close()
-                    return redirect(f'/client_page/{v.id}')
-                else:
-                    os.mkdir(f'storage/{v.id}')
-                    upload_file = file.read()
-                    new_file = open(f'storage/{v.id}/{file.filename}', 'wb')
-                    new_file.write(upload_file)
-                    new_file.close()
-                    return redirect(f'/client_page/{v.id}')
+                new_file = File(name=file.filename, data=file.read())
+                db.session.add(new_file)
+                db.session.commit()
+                return redirect(f'/client_page/{v.id}')
             else:
                 return redirect(f'/client_page/{v.id}/uploadfile')
         else:
