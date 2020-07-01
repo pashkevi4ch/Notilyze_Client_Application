@@ -5,6 +5,8 @@
       <w>notilyze</w>
       <w>signin</w>
       <w>sqlalchemy</w>
+      <w>uploadfile</w>
+      <w>xlsx</w>
     </words>
   </dictionary>
 </component>

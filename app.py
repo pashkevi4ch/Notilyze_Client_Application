@@ -1,6 +1,7 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 from models import Verification
+import os
 
 
 app = Flask(__name__)
@@ -92,8 +93,46 @@ def reports(id:int):
 @app.route("/report/r<int:rid>/u<int:uid>", methods=['GET', 'POST'])
 def report(rid: int, uid:int):
     if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=id).first()
         report = Report.query.filter_by(id=rid).first()
-        return render_template('report.html', rep=report)
+        return render_template('report.html', email=user.e_mail, user=user, rep=report)
+    else:
+        return redirect('/signin')
+
+
+@app.route("/client_page/<int:id>/uploadfile", methods=['GET', 'POST'])
+def upload_file(id: int):
+    if v.verificated is True and v.id == id:
+        user = User.query.filter_by(id=id).first()
+        return render_template('upload.html', email=user.e_mail, user=user)
+    else:
+        return redirect('/signin')
+
+
+@app.route("/upload", methods=['GET', 'POST'])
+def upload():
+    if v.verificated is True:
+        permitted_files = ['csv', 'xlsx', 'CSV', 'XLSX']
+        if request.method == 'POST':
+            file = request.files['file']
+            if file and file.filename.split('.')[1] in permitted_files:
+                if os.path.exists(f'storage/{v.id}'):
+                    upload_file = file.read()
+                    new_file = open(f'storage/{v.id}/{file.filename}', 'wb')
+                    new_file.write(upload_file)
+                    new_file.close()
+                    return redirect(f'/client_page/{v.id}')
+                else:
+                    os.mkdir(f'storage/{v.id}')
+                    upload_file = file.read()
+                    new_file = open(f'storage/{v.id}/{file.filename}', 'wb')
+                    new_file.write(upload_file)
+                    new_file.close()
+                    return redirect(f'/client_page/{v.id}')
+            else:
+                return redirect(f'/client_page/{v.id}/uploadfile')
+        else:
+            return redirect(f'/client_page/{v.id}/uploadfile')
     else:
         return redirect('/signin')
 
