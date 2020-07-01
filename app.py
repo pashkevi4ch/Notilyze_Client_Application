@@ -89,11 +89,11 @@ def reports(id:int):
         return redirect('/signin')
 
 
-@app.route("/report/<int:id>", methods=['GET', 'POST'])
+@app.route("/report/<int:id>/<string:url>/<string:report_uri>", methods=['GET', 'POST'])
 def report(id: int):
     if v.verificated is True and v.id == id:
         report = Report.query.filter_by(id=id)
-        return render_template('report.html')
+        return render_template('report.html', report=report)
     else:
         return redirect('/signin')
 
