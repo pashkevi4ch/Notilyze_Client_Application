@@ -81,15 +81,21 @@ def client(id: int):
 
 @app.route("/client_page/<int:id>/reports", methods=['GET', 'POST'])
 def reports(id:int):
-    user = User.query.filter_by(id=id).first()
-    reports = Report.query.filter(UsersReport.user_id == user.id).filter(Report.id == UsersReport.report_id)
-    return render_template('reports.html', report=reports, email=user.e_mail, user=user)
+    if v.verificated is True and v.id == id:
+        user = User.query.filter_by(id=id).first()
+        reports = Report.query.filter(UsersReport.user_id == user.id).filter(Report.id == UsersReport.report_id)
+        return render_template('reports.html', report=reports, email=user.e_mail, user=user)
+    else:
+        return redirect('/signin')
 
 
 @app.route("/report/<int:id>", methods=['GET', 'POST'])
 def report(id: int):
-    report = Report.query.filter_by(id=id)
-    return render_template('report.html')
+    if v.verificated is True and v.id == id:
+        report = Report.query.filter_by(id=id)
+        return render_template('report.html')
+    else:
+        return redirect('/signin')
 
 
 if __name__ == "__main__":
