@@ -19,6 +19,24 @@ class User(db.Model):
         return '<User %r>' % self.id
 
 
+class Report(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(400), nullable=False)
+    report_uri = db.Column(db.String(400), nullable=False)
+
+    def __repr__(self):
+        return '<Report %r>' % self.id
+
+
+class UsersReport(db.Model):
+    user_id = db.Column(db.Integer, primary_key=True)
+    report_id = db.Column(db.Integer, primary_key=True)
+
+    def __repr__(self):
+        return '<ReportUser %r>' % self.report_id
+
+
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/signin', methods=['GET', 'POST'])
 def sign_in():
@@ -53,16 +71,24 @@ def registration():
 
 
 @app.route("/client_page/<int:id>", methods=['GET', 'POST'])
-def client(id : int):
+def client(id: int):
     if v.verificated is True and v.id == id:
         user = User.query.filter_by(id=id).first()
-        return render_template('client.html', email=user.e_mail)
+        return render_template('client.html', email=user.e_mail, user=user)
     else:
         return redirect('/signin')
 
 
-@app.route("/report", methods=['GET', 'POST'])
-def report():
+@app.route("/client_page/<int:id>/reports", methods=['GET', 'POST'])
+def reports(id:int):
+    user = User.query.filter_by(id=id).first()
+    reports = Report.query.filter(UsersReport.user_id == user.id).filter(Report.id == UsersReport.report_id)
+    return render_template('reports.html', report=reports, email=user.e_mail, user=user)
+
+
+@app.route("/report/<int:id>", methods=['GET', 'POST'])
+def report(id: int):
+    report = Report.query.filter_by(id=id)
     return render_template('report.html')
 
 
