@@ -92,8 +92,8 @@ def reports(id:int):
 @app.route("/report/r<int:rid>/u<int:uid>", methods=['GET', 'POST'])
 def report(rid: int, uid:int):
     if v.verificated is True and v.id == uid:
-        inner_report = Report.query.filter_by(id=rid)
-        return render_template('report.html', report=inner_report)
+        report = Report.query.filter_by(id=rid).first()
+        return render_template('report.html', rep=report)
     else:
         return redirect('/signin')
 
