@@ -100,7 +100,7 @@ def reports(id:int):
 @app.route("/report/r<int:rid>/u<int:uid>", methods=['GET', 'POST'])
 def report(rid: int, uid:int):
     if v.verificated is True and v.id == uid:
-        user = User.query.filter_by(id=id).first()
+        user = User.query.filter_by(id=uid).first()
         report = Report.query.filter_by(id=rid).first()
         return render_template('report.html', email=user.e_mail, user=user, rep=report)
     else:
