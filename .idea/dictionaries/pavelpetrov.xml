@@ -2,6 +2,7 @@
   <dictionary name="pavelpetrov">
     <words>
       <w>clientpage</w>
+      <w>sqlalchemy</w>
     </words>
   </dictionary>
 </component>

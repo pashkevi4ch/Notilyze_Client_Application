@@ -9,6 +9,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATION  '] = False
 db = SQLAlchemy(app)
 v = Verification()
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     e_mail = db.Column(db.String(100), nullable=False)
@@ -58,6 +59,11 @@ def client(id : int):
         return render_template('client.html', email=user.e_mail)
     else:
         return redirect('/signin')
+
+
+@app.route("/report", methods=['GET', 'POST'])
+def report():
+    return render_template('report.html')
 
 
 if __name__ == "__main__":
