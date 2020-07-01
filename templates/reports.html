@@ -18,7 +18,7 @@ Reports
   {% for el in report %}
   <div classs="alert alert-info">
     <h3>{{ el.name }}</h3>
-    <a href="/report/{{el.id}}/{{el.url}}/{{el.report_uri}}" class="btn btn-warning">Details</a>
+    <a href="/report/r{{el.id}}/u{{user.id}}" class="btn btn-warning">Details</a>
   </div>
   {% endfor %}
 </div>
