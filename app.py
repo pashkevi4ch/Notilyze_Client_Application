@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for, request, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 from models import Verification, Admin
 import datetime as dt
+import os
 
 
 app = Flask(__name__)
@@ -173,7 +174,9 @@ def download(fid: int):
             ready_file = open(db_file.name, 'wb')
             ready_file.write(file_data)
             ready_file.close()
-            return send_file(f'{db_file.name}', attachment_filename=db_file.name)
+            result = send_file(f'{db_file.name}', attachment_filename=db_file.name)
+            os.remove(db_file.name)
+            return result
         except NotImplemented:
             return redirect('/admin_page')
     else:
