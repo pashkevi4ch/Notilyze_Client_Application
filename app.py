@@ -61,6 +61,7 @@ def sign_in():
             user = User.query.filter_by(e_mail=email).filter_by(password=password).first()
             user.last_login = dt.datetime.now()
             db.session.commit()
+            db.session.close()
             v.Verificate(user.id)
             return redirect(f'/client_page/{user.id}')
         except NotImplemented:
@@ -78,6 +79,7 @@ def registration():
         try:
             db.session.add(user)
             db.session.commit()
+            db.session.close()
             return redirect('/signin')
         except NotImplemented:
             return "Error"
@@ -196,6 +198,7 @@ def about_access():
                 if check is None:
                     db.session.add(users_report)
                     db.session.commit()
+                    db.session.close()
             except NotImplemented:
                 return redirect('/admin_page/about_access')
     else:
@@ -213,6 +216,7 @@ def upload():
                 new_file = File(name=file.filename, user_id=v.id, data=file.read())
                 db.session.add(new_file)
                 db.session.commit()
+                db.session.close()
                 return redirect(f'/client_page/{v.id}')
             else:
                 return redirect(f'/client_page/{v.id}/uploadfile')
