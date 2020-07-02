@@ -1,18 +1,21 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
-from models import Verification
+from models import Verification, Admin
+import datetime as dt
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notilyze.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATION  '] = False
 db = SQLAlchemy(app)
 v = Verification()
+a = Admin()
 
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     e_mail = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
+    last_login = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
         return '<User %r>' % self.id
@@ -20,6 +23,7 @@ class User(db.Model):
 
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(150), nullable=False)
     data = db.Column(db.LargeBinary, nullable=False)
 
@@ -54,6 +58,8 @@ def sign_in():
             email = request.form['email']
             password = request.form['password']
             user = User.query.filter_by(e_mail=email).filter_by(password=password).first()
+            user.last_login = dt.datetime.now()
+            db.session.commit()
             v.Verificate(user.id)
             return redirect(f'/client_page/{user.id}')
         except NotImplemented:
@@ -78,42 +84,120 @@ def registration():
         return render_template('registration.html')
 
 
-@app.route("/client_page/<int:id>", methods=['GET', 'POST'])
-def client(id: int):
-    if v.verificated is True and v.id == id:
-        user = User.query.filter_by(id=id).first()
-        return render_template('client.html', email=user.e_mail, user=user)
+@app.route("/client_page")
+@app.route("/client_page/<int:uid>", methods=['GET', 'POST'])
+def client(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
+        return render_template('client.html', email=user.e_mail, user=user, info_username=f"Username: {user.e_mail}",
+                               info_login=f"Last log in: {str(user.last_login).split('.')[0]}")
     else:
         return redirect('/signin')
 
 
-@app.route("/client_page/<int:id>/reports", methods=['GET', 'POST'])
-def reports(id:int):
-    if v.verificated is True and v.id == id:
-        user = User.query.filter_by(id=id).first()
-        reports = Report.query.filter(UsersReport.user_id == user.id).filter(Report.id == UsersReport.report_id)
-        return render_template('reports.html', report=reports, email=user.e_mail, user=user)
+@app.route("/client_page/<int:uid>/reports", methods=['GET', 'POST'])
+def reports(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
+        users_reports = Report.query.filter(UsersReport.user_id == user.id).filter(Report.id == UsersReport.report_id)
+        return render_template('reports.html', report=users_reports, email=user.e_mail, user=user)
     else:
         return redirect('/signin')
 
 
 @app.route("/report/r<int:rid>/u<int:uid>", methods=['GET', 'POST'])
-def report(rid: int, uid:int):
+def report(rid: int, uid: int):
     if v.verificated is True and v.id == uid:
         user = User.query.filter_by(id=uid).first()
-        report = Report.query.filter_by(id=rid).first()
-        return render_template('report.html', email=user.e_mail, user=user, rep=report)
+        user_report = Report.query.filter_by(id=rid).first()
+        return render_template('report.html', email=user.e_mail, user=user, rep=user_report)
     else:
         return redirect('/signin')
 
 
-@app.route("/client_page/<int:id>/uploadfile", methods=['GET', 'POST'])
-def upload_file(id: int):
-    if v.verificated is True and v.id == id:
-        user = User.query.filter_by(id=id).first()
+@app.route("/client_page/<int:uid>/uploadfile", methods=['GET', 'POST'])
+def upload_file(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
         return render_template('upload.html', email=user.e_mail, user=user)
     else:
         return redirect('/signin')
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    a.SignOut()
+    if request.method == 'POST':
+        try:
+            email = request.form['email']
+            password = request.form['password']
+            if email == 'admin@admin.notilyze' and password == 'password':
+                a.verificated = True
+                return redirect(f'/admin_page')
+        except NotImplemented:
+            return "Error"
+    return render_template('sign_in.html')
+
+
+@app.route('/admin_page', methods=['GET', 'POST'])
+def admin_page():
+    if a.verificated:
+        return render_template('admin.html')
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/file_manager')
+def file_manager():
+    if a.verificated:
+        return render_template('file_manager.html', users=User.query.all())
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/file_manager/<int:uid>')
+def folder(uid: int):
+    if a.verificated:
+        files = File.query.filter_by(user_id=uid).all()
+        return render_template('folder.html', folders=files)
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/file_manager/download/<int:fid>')
+def download(fid: int):
+    if a.verificated is True:
+        try:
+            db_file = File.query.filter_by(id=fid).first()
+            file_data = db_file.data
+            ready_file = open(db_file.name, 'wb')
+            ready_file.write(file_data)
+            ready_file.close()
+            return send_file(f'{db_file.name}', attachment_filename=db_file.name)
+        except NotImplemented:
+            return redirect('/admin_page')
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/about_access', methods=['GET', 'POST'])
+def about_access():
+    if a.verificated:
+        if request.method == 'POST':
+            try:
+                chose_user = request.form['client_id']
+                chose_report = request.form['report_id']
+                users_report = UsersReport(user_id=chose_user, report_id=chose_report)
+                check = UsersReport.query.filter_by(user_id=users_report.user_id)\
+                    .filter_by(report_id=users_report.report_id).first()
+                if check is None:
+                    db.session.add(users_report)
+                    db.session.commit()
+            except NotImplemented:
+                return redirect('/admin_page/about_access')
+    else:
+        return redirect('/admin')
+    return render_template('giving_access.html', clients=User.query.all(), reports=Report.query.all())
 
 
 @app.route("/upload", methods=['GET', 'POST'])
@@ -123,7 +207,7 @@ def upload():
         if request.method == 'POST':
             file = request.files['file']
             if file and file.filename.split('.')[1] in permitted_files:
-                new_file = File(name=file.filename, data=file.read())
+                new_file = File(name=file.filename, user_id=v.id, data=file.read())
                 db.session.add(new_file)
                 db.session.commit()
                 return redirect(f'/client_page/{v.id}')

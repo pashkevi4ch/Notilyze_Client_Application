@@ -2,10 +2,12 @@
   <dictionary name="pavelpetrov">
     <words>
       <w>clientpage</w>
+      <w>endfor</w>
       <w>notilyze</w>
       <w>signin</w>
       <w>sqlalchemy</w>
       <w>uploadfile</w>
+      <w>verificated</w>
       <w>xlsx</w>
     </words>
   </dictionary>
