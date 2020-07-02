@@ -63,7 +63,7 @@ def sign_in():
             db.session.commit()
             v.Verificate(user.id)
             return redirect(f'/client_page/{user.id}')
-        except NotImplemented:
+        except:
             return "Error"
     return render_template('sign_in.html')
 
@@ -79,7 +79,7 @@ def registration():
             db.session.add(user)
             db.session.commit()
             return redirect('/signin')
-        except NotImplemented:
+        except:
             return "Error"
     else:
         return render_template('registration.html')
@@ -135,7 +135,7 @@ def admin():
             if email == 'admin@admin.notilyze' and password == 'password':
                 a.verificated = True
                 return redirect(f'/admin_page')
-        except NotImplemented:
+        except:
             return "Error"
     return render_template('sign_in.html')
 
@@ -177,7 +177,7 @@ def download(fid: int):
             result = send_file(f'{db_file.name}', attachment_filename=db_file.name)
             os.remove(db_file.name)
             return result
-        except NotImplemented:
+        except:
             return redirect('/admin_page')
     else:
         return redirect('/admin')
@@ -196,7 +196,7 @@ def about_access():
                 if check is None:
                     db.session.add(users_report)
                     db.session.commit()
-            except NotImplemented:
+            except:
                 return redirect('/admin_page/about_access')
     else:
         return redirect('/admin')
