@@ -6,7 +6,7 @@ import os
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notilyze.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app-data/notilyze.db'
 db = SQLAlchemy(app)
 v = Verification()
 a = Admin()
