@@ -1,0 +1,45 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+       <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+           <div class="col">
+               <a href="https://notilyze.com/">
+               <img src="/static/images/notilyze_logo.png" alt="" width="120" height="30">
+                </a>
+           </div>
+      <nav class="my-2 my-md-0 mr-md-3">
+        <a class="p-2 text-dark" href="#">Support</a>
+      </nav>
+           <a class="font-italic mr-3">{%block name %}{% endblock %}</a>
+           <a class="btn btn-outline-warning" href="/">Sign out</a>
+    </div>
+</body>
+  <head>
+    <script async src="https://unpkg.com/@sassoftware/va-report-components@0.6/dist/umd/va-report-components.js"></script>
+    <style>
+      html {
+        background-color: #f0f0f0;
+      }
+      sas-report {
+        width: 100%;
+        height: 100%;
+        --sas-report-padding: 10px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <sas-report hideNavigation="auto"
+                authenticationType="credentials"
+                url={{rep.url}}
+                reportUri={{rep.report_uri}}>
+    </sas-report>
+  </body>
+</html>
