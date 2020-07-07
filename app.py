@@ -85,7 +85,6 @@ def registration():
         return render_template('registration.html')
 
 
-@app.route("/client_page")
 @app.route("/client_page/<int:uid>", methods=['GET', 'POST'])
 def client(uid: int):
     if v.verificated is True and v.id == uid:
@@ -213,13 +212,58 @@ def upload():
                 new_file = File(name=file.filename, user_id=v.id, data=file.read())
                 db.session.add(new_file)
                 db.session.commit()
-                return redirect(f'/client_page/{v.id}')
+                return redirect(f'/client_page/{v.id}/upload_info/1')
             else:
-                return redirect(f'/client_page/{v.id}/uploadfile')
-        else:
-            return redirect(f'/client_page/{v.id}/uploadfile')
+                return redirect(f'/client_page/{v.id}/upload_info/0')
     else:
         return redirect('/signin')
+
+
+@app.route("/client_page/<int:uid>/upload_info/<int:eid>")
+def upload_info(uid: int, eid: int):
+    if v.verificated is True and v.id is uid:
+        user = User.query.filter_by(id=uid).first()
+        if eid == 0:
+            return render_template('unsuccessful_upload.html', email=user.e_mail, user=user)
+        elif eid == 1:
+            return render_template('successful_upload.html', email=user.e_mail, user=user)
+        else:
+            return redirect('/signin')
+    else:
+        return redirect('/signin')
+
+
+@app.route('/admin_page/remove_access')
+def removing_access():
+    if a.verificated:
+        return render_template('remove_access.html', users=User.query.all())
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/remove_access/<int:uid>')
+def accesses(uid: int):
+    if a.verificated:
+        username = User.query.filter_by(id=uid).first().e_mail
+        users_reports = Report.query.filter(UsersReport.user_id == uid).filter(Report.id == UsersReport.report_id).all()
+        return render_template('removing_accesses.html', username=username, uid=uid, reports=users_reports)
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/remove_access/<int:uid>/<int:rid>')
+def remove(uid: int, rid: int):
+    if a.verificated is True:
+        try:
+            user_report = UsersReport.query.filter_by(user_id=uid) \
+                .filter_by(report_id=rid).first()
+            db.session.delete(user_report)
+            db.session.commit()
+            return redirect(f'/admin_page/remove_access/{uid}')
+        except:
+            return render_template('unsuccessful_removing.html')
+    else:
+        return redirect('/admin')
 
 
 if __name__ == "__main__":
