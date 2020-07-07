@@ -159,7 +159,7 @@ def file_manager():
 def folder(uid: int):
     if a.verificated:
         files = File.query.filter_by(user_id=uid).all()
-        return render_template('folder.html', folders=files)
+        return render_template('folder.html', files=files)
     else:
         return redirect('/admin')
 
@@ -262,6 +262,28 @@ def remove(uid: int, rid: int):
             return redirect(f'/admin_page/remove_access/{uid}')
         except:
             return render_template('unsuccessful_removing.html')
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/add_report', methods=['GET', 'POST'])
+def add_report():
+    if a.verificated:
+        if request.method == 'POST':
+            name = request.form['name']
+            url = request.form['url']
+            uri = request.form['uri']
+            if name != '' and url != '' and uri != '':
+                report = Report(name=name, url=url, report_uri=uri)
+                try:
+                    db.session.add(report)
+                    db.session.commit()
+                    return render_template('successful_addition_of_report.html')
+                except:
+                    return render_template('unsuccessful_addition_of_report.html')
+            else:
+                return render_template('unsuccessful_addition_of_report.html')
+        return render_template('add_report.html')
     else:
         return redirect('/admin')
 

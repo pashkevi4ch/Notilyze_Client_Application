@@ -3,10 +3,10 @@
 
 {% block source %}
 <div class="container mt-5">
-  <h1>Users' folders</h1>
+  <h1>{{ username }} files</h1>
 
 
-  {% for el in folders %}
+  {% for el in files %}
   <div class="alert alert-info">
     <h4>{{ el.name }}
       <a href="/admin_page/file_manager/download/{{el.id}}" class="btn btn-warning">Download</a>
