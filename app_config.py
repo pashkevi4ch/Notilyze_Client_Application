@@ -1,8 +1,8 @@
 import os
 
-CLIENT_ID = "8e41ec7f-1b2b-422a-b83d-d433e8c4efc8"
+CLIENT_ID = "e6b5b4f4-71bb-4070-b704-f49e0a2dc2c1"
 
-CLIENT_SECRET = "~TZ-~_PZ5LCq~eu7UdjVs1cCe5fUMy3L6j"
+CLIENT_SECRET = "e.nftK8DPj2.46foQ1oa_~CR3Qlr7HvMem"
 
 AUTHORITY = "https://login.microsoftonline.com/5b71f334-6f32-452f-9046-e127a708ce42"
 
