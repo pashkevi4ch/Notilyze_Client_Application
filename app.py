@@ -154,7 +154,7 @@ def admin():
                 return redirect(f'/admin_page')
         except:
             return "Error"
-    return render_template('sign_in.html')
+    return render_template('sign_in_for_admin.html')
 
 
 @app.route('/admin_page', methods=['GET', 'POST'])
