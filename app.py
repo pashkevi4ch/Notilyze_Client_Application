@@ -1,13 +1,18 @@
-from flask import Flask, render_template, url_for, request, redirect, send_file
+from flask import Flask, render_template, url_for, request, redirect, send_file, session
 from flask_sqlalchemy import SQLAlchemy
 from models import Verification, Admin
+from flask_session import Session  # https://pythonhosted.org/Flask-Session
 import datetime as dt
 import os
-
+import msal
+import app_config
+import uuid
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notilyze.db'
+app.config.from_object(app_config)
 db = SQLAlchemy(app)
+Session(app)
 v = Verification()
 a = Admin()
 
@@ -54,41 +59,54 @@ class UsersReport(db.Model):
 @app.route('/signin', methods=['GET', 'POST'])
 def sign_in():
     v.SignOut()
-    if request.method == 'POST':
-        try:
-            email = request.form['email']
-            password = request.form['password']
-            user = User.query.filter_by(e_mail=email).filter_by(password=password).first()
-            user.last_login = dt.datetime.now()
-            db.session.commit()
-            v.Verificate(user.id)
-            return redirect(f'/client_page/{user.id}')
-        except:
-            return "Error"
-    return render_template('sign_in.html')
+    session["state"] = str(uuid.uuid4())
+    # Technically we could use empty list [] as scopes to do just sign in,
+    # here we choose to also collect end user consent upfront
+    auth_url = f'https://login.microsoftonline.com/5b71f334-6f32-452f-9046-e127a708ce42/oauth2/v2.0/authorize?' \
+        f'client_id=e6b5b4f4-71bb-4070-b704-f49e0a2dc2c1&response_type=code&' \
+        f'redirect_uri=http://localhost:5000/getAToken&' \
+        f'scope=User.ReadBasic.All+offline_access+openid+profile&state={session["state"]}'
+    return render_template('sign_in.html', auth_url=auth_url)
 
 
-@app.route("/registration", methods=['GET', 'POST'])
-def registration():
-    v.SignOut()
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        user = User(e_mail=email, password=password)
-        try:
-            db.session.add(user)
-            db.session.commit()
-            return redirect('/signin')
-        except:
-            return "Error"
+@app.route(app_config.REDIRECT_PATH)
+def authorized():
+    if request.args.get('state') != session.get("state"):
+        return redirect('/client_page')
+    if request.args.get('code'):
+        cache = _load_cache()
+        result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
+            request.args['code'],
+            scopes=app_config.SCOPE,
+            redirect_uri='http://localhost:5000/getAToken')
+        session["user"] = result.get("id_token_claims")
+        _save_cache(cache)
+    return redirect('/client_page')
+
+
+@app.route("/client_page", methods=['GET', 'POST'])
+def tmp_client():
+    if not session.get("user"):
+        return redirect('/signin')
     else:
-        return render_template('registration.html')
+        check = User.query.filter_by(e_mail=session["user"].get("name")).first()
+        if check is None:
+            new_user = User(e_mail=session["user"].get("name"), password='tmp')
+            db.session.add(new_user)
+            db.session.commit()
+            user_id = User.query.filter_by(e_mail=session["user"].get("name")).first().id
+        else:
+            user_id = User.query.filter_by(e_mail=session["user"].get("name")).first().id
+        v.Verificate(user_id)
+        return redirect(f'/client_page/{user_id}')
 
 
 @app.route("/client_page/<int:uid>", methods=['GET', 'POST'])
 def client(uid: int):
     if v.verificated is True and v.id == uid:
         user = User.query.filter_by(id=uid).first()
+        user.last_login = dt.datetime.now()
+        db.session.commit()
         return render_template('client.html', email=user.e_mail, user=user, info_username=f"Username: {user.e_mail}",
                                info_login=f"Last log in: {str(user.last_login).split('.')[0]}")
     else:
@@ -286,6 +304,24 @@ def add_report():
         return render_template('add_report.html')
     else:
         return redirect('/admin')
+
+
+def _load_cache():
+    cache = msal.SerializableTokenCache()
+    if session.get("token_cache"):
+        cache.deserialize(session["token_cache"])
+    return cache
+
+
+def _build_msal_app(cache=None, authority=None):
+    return msal.ConfidentialClientApplication(
+        app_config.CLIENT_ID, authority=authority or app_config.AUTHORITY,
+        client_credential=app_config.CLIENT_SECRET, token_cache=cache)
+
+
+def _save_cache(cache):
+    if cache.has_state_changed:
+        session["token_cache"] = cache.serialize()
 
 
 if __name__ == "__main__":
