@@ -65,7 +65,7 @@ def sign_in():
     auth_url = f'https://login.microsoftonline.com/b0130353-4673-4dbc-b2f5-fd202b6c732a/oauth2/v2.0/authorize?' \
         f'client_id=9b5e0bf8-3d49-4bba-8775-35a4e233cb84&response_type=code&' \
         f'redirect_uri=https://notilyzeclientapp.herokuapp.com/getAToken&' \
-        f'scope=User.ReadBasic.All+offline_access+openid+profile&state={session["state"]}'
+        f'scope=User.ReadBasic.All+User.Read+offline_access+openid+profile&state={session["state"]}'
     return render_template('sign_in.html', auth_url=auth_url)
 
 
@@ -88,7 +88,7 @@ def authorized():
 @app.route("/client_page", methods=['GET', 'POST'])
 def tmp_client():
     if not session.get("user"):
-        return render_template('error.html', session=session)
+        return redirect(sign_in)
     else:
         check = User.query.filter_by(e_mail=session["user"].get("name")).first()
         if check is None:
