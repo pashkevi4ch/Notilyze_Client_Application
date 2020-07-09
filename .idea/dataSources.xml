@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="notilyze" uuid="e4299a89-7079-4a86-adf2-2c515881eee1">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\petro\PycharmProjects\Notilyze_Client_Application\notilyze.db</jdbc-url>
+    </data-source>
+  </component>
+</project>

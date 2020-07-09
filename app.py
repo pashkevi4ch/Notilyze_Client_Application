@@ -80,6 +80,7 @@ def authorized():
             scopes=app_config.SCOPE,
             redirect_uri='https://notilyzeclientapp.herokuapp.com/getAToken')
         session["user"] = result.get("id_token_claims")
+        print(result)
         _save_cache(cache)
     return redirect('/client_page')
 
