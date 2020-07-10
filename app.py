@@ -88,7 +88,7 @@ def authorized():
 @app.route("/client_page", methods=['GET', 'POST'])
 def tmp_client():
     if not session.get("user"):
-        return redirect('/signin')
+        return render_template('error.html', session=session)
     else:
         check = User.query.filter_by(e_mail=session["user"].get("name")).first()
         if check is None:
