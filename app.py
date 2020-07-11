@@ -63,7 +63,7 @@ def sign_in():
     # Technically we could use empty list [] as scopes to do just sign in,
     # here we choose to also collect end user consent upfront
     auth_url = f'https://login.microsoftonline.com/b0130353-4673-4dbc-b2f5-fd202b6c732a/oauth2/v2.0/authorize?' \
-        f'client_id=hroappdev&response_type=code&' \
+        f'client_id=9b5e0bf8-3d49-4bba-8775-35a4e233cb84&response_type=code&' \
         f'redirect_uri=https://notilyzeclientapp.herokuapp.com/getAToken&' \
         f'scope=User.ReadBasic.All+User.Read+offline_access+openid+profile&state={session["state"]}'
     return render_template('sign_in.html', auth_url=auth_url)
