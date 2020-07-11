@@ -1,6 +1,6 @@
 import os
 
-CLIENT_ID = "9b5e0bf8-3d49-4bba-8775-35a4e233cb84"
+CLIENT_ID = "hroappdev"
 
 CLIENT_SECRET = "-4f1Q160hlUl9s-CcZTOP0kEY_c-5oZM"
 
