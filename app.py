@@ -64,8 +64,8 @@ def sign_in():
     session["state"] = str(uuid.uuid4())
     # Technically we could use empty list [] as scopes to do just sign in,
     # here we choose to also collect end user consent upfront
-    auth_url = f'https://login.microsoftonline.com/5b71f334-6f32-452f-9046-e127a708ce42/oauth2/v2.0/authorize?' \
-        f'client_id=2680555c-83de-4fc4-8bbb-a0a7854407a4&response_type=code&' \
+    auth_url = f'https://login.microsoftonline.com/a111daf6-3065-41cb-9b63-ab81be54bafd/oauth2/v2.0/authorize?' \
+        f'client_id=75c6abe9-3615-4375-bfe9-2866f051617d&response_type=code&' \
         f'redirect_uri=http://localhost:5000/getAToken&' \
         f'scope=User.ReadBasic.All+offline_access+openid+profile&state={session["state"]}'
     return render_template('sign_in.html', auth_url=auth_url)
