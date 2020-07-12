@@ -157,7 +157,7 @@ def api_verified(uid: int):
             response = requests.post(
                 'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
                 headers=headers, cookies=cookies, data=data)
-            result = json.loads(response.text)["outputs"]["value"]
+            result = json.loads(response.text)["outputs"][0]["value"]
         return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code), respond=result)
 
 
