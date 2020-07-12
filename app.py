@@ -148,14 +148,15 @@ def api(uid: int):
                         'Authorization': 'Bearer ' + result_token,
                     }
 
-                    data = '{"inputs": [{"name": "ID","value": ' + request.form['APIid'] + '}]}'
+                    id = request.form['APIid']
+                    data = '{"inputs": [{"name": "ID","value": ' + f'{str(id)}' + '}]}'
 
                     response = requests.post(
-                        'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
-                        headers=headers, cookies=cookies, data=data)
+                            'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
+                            headers=headers, cookies=cookies, data=data)
                     result = json.loads(response.text)["outputs"][0]["value"]
-                return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code),
-                                       respond=result)
+                    return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code),
+                                           respond=result)
             except:
                 return render_template('api.html', email=user.e_mail, user=user, status_code='error',
                                        respond="Seems like you've entered invalid id.")
