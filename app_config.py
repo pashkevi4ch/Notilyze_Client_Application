@@ -1,10 +1,10 @@
 import os
 
-CLIENT_ID = "9b5e0bf8-3d49-4bba-8775-35a4e233cb84"
+CLIENT_ID = "52e6e094-6eb2-4dfa-8726-2b6843bd3205"
 
-CLIENT_SECRET = "-4f1Q160hlUl9s-CcZTOP0kEY_c-5oZM"
+CLIENT_SECRET = "_yxx_BL3~Xq6CO7_mNl3p4ULopoa~.sjhn"
 
-AUTHORITY = "https://login.microsoftonline.com/b0130353-4673-4dbc-b2f5-fd202b6c732a"
+AUTHORITY = "https://login.microsoftonline.com/a111daf6-3065-41cb-9b63-ab81be54bafd"
 
 REDIRECT_PATH = "/getAToken"  # Used for forming an absolute URL to your redirect URI.
                               # The absolute URL must match the redirect URI you set
