@@ -7,6 +7,8 @@ import os
 import msal
 import app_config
 import uuid
+import requests
+import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notilyze.db'
@@ -63,11 +65,46 @@ def sign_in():
     # Technically we could use empty list [] as scopes to do just sign in,
     # here we choose to also collect end user consent upfront
     auth_url = f'https://login.microsoftonline.com/5b71f334-6f32-452f-9046-e127a708ce42/oauth2/v2.0/authorize?' \
-        f'client_id=e6b5b4f4-71bb-4070-b704-f49e0a2dc2c1&response_type=code&' \
+        f'client_id=2680555c-83de-4fc4-8bbb-a0a7854407a4&response_type=code&' \
         f'redirect_uri=http://localhost:5000/getAToken&' \
         f'scope=User.ReadBasic.All+offline_access+openid+profile&state={session["state"]}'
     return render_template('sign_in.html', auth_url=auth_url)
 
+
+@app.route('/client_page/api')
+def api():
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+    }
+
+    data = {
+        'grant_type': 'password',
+        'username': 'hro',
+        'password': 'o5PyWC@Mis85'
+    }
+
+    response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token', headers=headers,
+                             data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
+    if response.status_code is 200:
+        result_token = json.loads(response.text)["access_token"]
+        cookies = {
+            'JSESSIONID': '320F5BDCDBA5701381440097F4E11236.microanalyticservice-10-12-16-46',
+        }
+
+        headers = {
+            'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + result_token,
+        }
+
+        data = '{"inputs": [{"name": "ID","value": 1000}]}'
+
+        response = requests.post(
+            'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
+            headers=headers, cookies=cookies, data=data)
+
+    return render_template('text.html', source=response)
 
 @app.route(app_config.REDIRECT_PATH)
 def authorized():
