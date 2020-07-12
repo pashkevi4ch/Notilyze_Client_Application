@@ -71,40 +71,49 @@ def sign_in():
     return render_template('sign_in.html', auth_url=auth_url)
 
 
-@app.route('/client_page/api')
-def api():
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-    }
+@app.route("/client_page/<int:uid>/api", methods=['GET', 'POST'])
+def api(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
+        return render_template('api.html', email=user.e_mail, user=user, status_code="", respond="")
 
-    data = {
-        'grant_type': 'password',
-        'username': 'hro',
-        'password': 'o5PyWC@Mis85'
-    }
 
-    response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token', headers=headers,
-                             data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
-    if response.status_code is 200:
-        result_token = json.loads(response.text)["access_token"]
-        cookies = {
-            'JSESSIONID': '320F5BDCDBA5701381440097F4E11236.microanalyticservice-10-12-16-46',
-        }
-
+@app.route("/client_page/<int:uid>/api/verified", methods=['GET', 'POST'])
+def api_verified(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
         headers = {
-            'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + result_token,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
         }
 
-        data = '{"inputs": [{"name": "ID","value": 1000}]}'
+        data = {
+            'grant_type': 'password',
+            'username': 'hro',
+            'password': 'o5PyWC@Mis85'
+        }
 
-        response = requests.post(
-            'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
-            headers=headers, cookies=cookies, data=data)
+        response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token', headers=headers,
+                                 data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
+        if response.status_code is 200:
+            result_token = json.loads(response.text)["access_token"]
+            cookies = {
+                'JSESSIONID': '320F5BDCDBA5701381440097F4E11236.microanalyticservice-10-12-16-46',
+            }
 
-    return render_template('text.html', source=response)
+            headers = {
+                'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + result_token,
+            }
+
+            data = '{"inputs": [{"name": "ID","value": 1000}]}'
+
+            response = requests.post(
+                'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
+                headers=headers, cookies=cookies, data=data)
+            result = json.loads(response.text)["outputs"][0]["value"]
+        return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code), respond=result)
 
 @app.route(app_config.REDIRECT_PATH)
 def authorized():
