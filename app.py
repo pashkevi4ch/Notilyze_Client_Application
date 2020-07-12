@@ -7,6 +7,9 @@ import os
 import msal
 import app_config
 import uuid
+import json
+import requests
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notilyze.db'
@@ -111,6 +114,51 @@ def client(uid: int):
                                info_login=f"Last log in: {str(user.last_login).split('.')[0]}")
     else:
         return redirect('/signin')
+
+
+@app.route("/client_page/<int:uid>/api", methods=['GET', 'POST'])
+def api(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
+        return render_template('api.html', email=user.e_mail, user=user, status_code="", respond="")
+
+
+@app.route("/client_page/<int:uid>/api/verified", methods=['GET', 'POST'])
+def api_verified(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+        }
+
+        data = {
+            'grant_type': 'password',
+            'username': 'hro',
+            'password': 'o5PyWC@Mis85'
+        }
+
+        response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token', headers=headers,
+                                 data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
+        if response.status_code is 200:
+            result_token = json.loads(response.text)["access_token"]
+            cookies = {
+                'JSESSIONID': '320F5BDCDBA5701381440097F4E11236.microanalyticservice-10-12-16-46',
+            }
+
+            headers = {
+                'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + result_token,
+            }
+
+            data = '{"inputs": [{"name": "ID","value": 1000}]}'
+
+            response = requests.post(
+                'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
+                headers=headers, cookies=cookies, data=data)
+            result = json.loads(response.text)["outputs"]["value"]
+        return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code), respond=result)
 
 
 @app.route("/client_page/<int:uid>/reports", methods=['GET', 'POST'])
