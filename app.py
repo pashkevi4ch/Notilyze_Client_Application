@@ -58,6 +58,12 @@ class UsersReport(db.Model):
         return '<ReportUser %r>' % self.report_id
 
 
+class API(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    input_fields = db.Column(db.String, nullable=False)
+    href = db.Column(db.String(400), nullable=False)
+
+
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/signin', methods=['GET', 'POST'])
 def sign_in():
@@ -138,9 +144,6 @@ def api(uid: int):
                                          data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
                 if response.status_code is 200:
                     result_token = json.loads(response.text)["access_token"]
-                    cookies = {
-                        'JSESSIONID': '320F5BDCDBA5701381440097F4E11236.microanalyticservice-10-12-16-46',
-                    }
 
                     headers = {
                         'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
@@ -148,12 +151,12 @@ def api(uid: int):
                         'Authorization': 'Bearer ' + result_token,
                     }
 
-                    id = request.form['APIid']
-                    data = '{"inputs": [{"name": "ID","value": ' + f'{str(id)}' + '}]}'
+                    api_id = request.form['APIid']
+                    data = '{"inputs": [{"name": "ID","value": ' + f'{str(api_id)}' + '}]}'
 
                     response = requests.post(
                             'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
-                            headers=headers, cookies=cookies, data=data)
+                            headers=headers, data=data)
                     result = json.loads(response.text)["outputs"][0]["value"]
                     return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code),
                                            respond=result)
