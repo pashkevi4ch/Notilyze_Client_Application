@@ -65,6 +65,7 @@ class ApiUser(db.Model):
 
 class API(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable= False)
     input_fields = db.Column(db.String, nullable=True)
     href = db.Column(db.String(400), nullable=False)
 
@@ -127,11 +128,22 @@ def client(uid: int):
         return redirect('/signin')
 
 
+@app.route("/client_page/apis")
+def apis(uid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
+        users_apis = API.query.filter(ApiUser.user_id == user.id).filter(API.id == ApiUser.api_id)
+        return render_template('apis.html', api=users_apis, email=user.e_mail, user=user)
+    else:
+        return redirect('/signin')
+
+
 @app.route("/client_page/<int:uid>/<int:aid>/api", methods=['GET', 'POST'])
 def api(uid: int, aid: int):
     if v.verificated is True and v.id == uid:
         user = User.query.filter_by(id=uid).first()
         api = API.query.filter_by(id=aid).first()
+        inputs = str(api.input_fields).split(',')
         if request.method == 'POST':
             try:
                 headers = {
@@ -157,18 +169,23 @@ def api(uid: int, aid: int):
                         'Authorization': 'Bearer ' + result_token,
                     }
 
-                    api_id = request.form['APIid']
-                    data = '{"inputs": [{"name": "ID","value": ' + f'{str(api_id)}' + '}]}'
+                    data_from_forms = ''
+                    for i in inputs:
+                        if str(request.form[i]).isdecimal():
+                            data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
+                        else:
+                            data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
+                    data = '{"inputs": [' + f'{data_from_forms}' + ']}'
 
                     response = requests.post(
                             api.href,
                             headers=headers, data=data)
                     result = json.loads(response.text)["outputs"]
-                    return render_template('api.html', email=user.e_mail, user=user,
+                    return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
                                            status_code=str(response.status_code), respond=result)
             except:
-                return render_template('api.html', email=user.e_mail, user=user, status_code='error',
-                                       respond="Seems like you've entered invalid id.")
+                return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code='error',
+                                       respond="Seems like you've entered invalid credentials.")
         return render_template('api.html', email=user.e_mail, user=user, status_code="", respond="")
     else:
         return redirect('/signin')

@@ -4,10 +4,12 @@
 {% block source %}
 <form class="needs-validation" method="post">
         <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="APIid">ID</label>
-            <input type="text" name="APIid" class="form-control" id="APIid" required>
+        {% for i in inputs %}
+            <div class="col-md-6 mb-3">
+            <label for={{i}}>{{i}}</label>
+            <input type="text" name={{i}} class="form-control" id={{i}} required>
           </div>
+        {% endfor %}
         </div>
         <button class="btn btn-warning btn-lg btn-block" type="submit">Submit</button>
       </form>
