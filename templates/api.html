@@ -1,0 +1,22 @@
+{% extends 'client_base.html' %}
+
+
+{% block source %}
+<form class="needs-validation" method="post">
+        <div class="row">
+        {% for i in inputs %}
+            <div class="col-md-6 mb-3">
+            <label for={{i}}>{{i}}</label>
+            <input type="text" name={{i}} class="form-control" id={{i}} required>
+          </div>
+        {% endfor %}
+        </div>
+        <button class="btn btn-warning btn-lg btn-block" type="submit">Submit</button>
+      </form>
+<h5>Status code: {{ status_code }}</h5>
+<h5>Respond:
+    {% for el in respond %}
+    <h5>{{el.name}}: {{el.value}}</h5>
+    {% endfor %}
+</h5>
+{% endblock %}

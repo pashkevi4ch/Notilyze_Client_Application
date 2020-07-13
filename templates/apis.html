@@ -1,0 +1,25 @@
+{% extends 'client_base.html' %}
+
+
+
+{% block title %}
+Reports
+{% endblock %}
+
+{% block name %}
+{{ email }}
+{% endblock %}
+
+{% block source %}
+<div class="container mt-5">
+  <h1>Your reports</h1>
+
+
+  {% for el in api %}
+  <div class="alert alert-info">
+    <h3>{{ el.name }}</h3>
+    <a href="/client_page/{{user.id}}/{{el.id}}/api" class="btn btn-warning">Details</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
