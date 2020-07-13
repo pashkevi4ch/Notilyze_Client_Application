@@ -166,9 +166,9 @@ def api(uid: int, aid: int):
                     result = json.loads(response.text)["outputs"]
                     result_str = ''
                     for i in result:
-                        result_str += i["name"] + ' ' + i["value"] + '\n'
+                        result_str += str(i["name"]) + ' ' + str(i["value"]) + '\n'
                     return render_template('api.html', email=user.e_mail, user=user,
-                                           status_code=str(response.status_code),respond=result_str)
+                                           status_code=str(response.status_code), respond=result_str)
             except:
                 return render_template('api.html', email=user.e_mail, user=user, status_code='error',
                                        respond="Seems like you've entered invalid id.")
