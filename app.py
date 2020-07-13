@@ -410,6 +410,28 @@ def add_report():
         return redirect('/admin')
 
 
+@app.route('/admin_page/add_api', methods=['GET', 'POST'])
+def add_api():
+    if a.verificated:
+        if request.method == 'POST':
+            name = request.form['name']
+            url = request.form['url']
+            inputs = request.form['inputs']
+            if name != '' and url != '' and inputs != '':
+                api = API(name=name, href=url, input_fields=inputs)
+                try:
+                    db.session.add(api)
+                    db.session.commit()
+                    return render_template('successful_addition_of_report.html')
+                except:
+                    return render_template('unsuccessful_addition_of_report.html')
+            else:
+                return render_template('unsuccessful_addition_of_report.html')
+        return render_template('add_api.html')
+    else:
+        return redirect('/admin')
+
+
 def _load_cache():
     cache = msal.SerializableTokenCache()
     if session.get("token_cache"):
