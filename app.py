@@ -57,6 +57,18 @@ class UsersReport(db.Model):
         return '<ReportUser %r>' % self.report_id
 
 
+class ApiUser(db.Model):
+    api_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
+
+
+class API(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable= False)
+    input_fields = db.Column(db.String, nullable=True)
+    href = db.Column(db.String(400), nullable=False)
+
+
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/signin', methods=['GET', 'POST'])
 def sign_in():
@@ -71,48 +83,74 @@ def sign_in():
     return render_template('sign_in.html', auth_url=auth_url)
 
 
-@app.route("/client_page/<int:uid>/api", methods=['GET', 'POST'])
-def api(uid: int):
+@app.route("/client_page/<int:uid>/apis")
+def apis(uid: int):
     if v.verificated is True and v.id == uid:
         user = User.query.filter_by(id=uid).first()
-        if request.method == 'POST':
-            headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json',
-            }
-
-            data = {
-                'grant_type': 'password',
-                'username': 'hro',
-                'password': 'o5PyWC@Mis85'
-            }
-
-            response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token',
-                                     headers=headers,
-                                     data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
-            if response.status_code is 200:
-                result_token = json.loads(response.text)["access_token"]
-                cookies = {
-                    'JSESSIONID': '320F5BDCDBA5701381440097F4E11236.microanalyticservice-10-12-16-46',
-                }
-
-                headers = {
-                    'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + result_token,
-                }
-                id = request.form['Id']
-                data = '{"inputs": [{"name": "ID","value": ' + f'{str(id)}' + '}]}'
-
-                response = requests.post(
-                    'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
-                    headers=headers, cookies=cookies, data=data)
-                result = json.loads(response.text)["outputs"][0]["value"]
-            return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code),
-                                   respond=result)
-        return render_template('api.html', email=user.e_mail, user=user, status_code="", respond="")
+        users_apis = API.query.filter(ApiUser.user_id == user.id).filter(API.id == ApiUser.api_id)
+        return render_template('apis.html', api=users_apis, email=user.e_mail, user=user)
     else:
         return redirect('/signin')
+
+
+@app.route("/client_page/<int:uid>/<int:aid>/api", methods=['GET', 'POST'])
+def api(uid: int, aid: int):
+    if v.verificated is True and v.id == uid:
+        user = User.query.filter_by(id=uid).first()
+        api = API.query.filter_by(id=aid).first()
+        inputs = str(api.input_fields).split(',')
+        if request.method == 'POST':
+            try:
+                headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json',
+                }
+
+                data = {
+                    'grant_type': 'password',
+                    'username': 'hro',
+                    'password': 'o5PyWC@Mis85'
+                }
+
+                response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token',
+                                         headers=headers,
+                                         data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
+                if response.status_code is 200:
+                    result_token = json.loads(response.text)["access_token"]
+
+                    headers = {
+                        'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + result_token,
+                    }
+
+                    data_from_forms = ''
+                    for i in inputs:
+                        if str(request.form[i]).isdecimal():
+                            if i == inputs[len(inputs) - 1]:
+                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "}"
+                            else:
+                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
+                        else:
+                            if i == inputs[len(inputs) - 1]:
+                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "}"
+                            else:
+                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
+                    data = '{"inputs": [' + f'{data_from_forms}' + ']}'
+
+                    t_response = requests.post(
+                            f'{api.href}',
+                            headers=headers, data=data)
+                    result = json.loads(t_response.text)["outputs"]
+                    return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
+                                           status_code=str(t_response.status_code), respond=result)
+            except:
+                return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code='error',
+                                       respond="Seems like you've entered invalid credentials.")
+        return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code="", respond="")
+    else:
+        return redirect('/signin')
+
 
 @app.route(app_config.REDIRECT_PATH)
 def authorized():
@@ -199,7 +237,7 @@ def admin():
                 return redirect(f'/admin_page')
         except:
             return "Error"
-    return render_template('sign_in.html')
+    return render_template('sign_in_for_admin.html')
 
 
 @app.route('/admin_page', methods=['GET', 'POST'])
@@ -216,6 +254,26 @@ def file_manager():
         return render_template('file_manager.html', users=User.query.all())
     else:
         return redirect('/admin')
+
+
+@app.route('/admin_page/about_api', methods=['GET', 'POST'])
+def about_api():
+    if a.verificated:
+        if request.method == 'POST':
+            try:
+                chose_user = request.form['client_id']
+                chose_api = request.form['api_id']
+                users_api = ApiUser(user_id=chose_user, api_id=chose_api)
+                check = ApiUser.query.filter_by(user_id=users_api.user_id) \
+                    .filter_by(api_id=users_api.api_id).first()
+                if check is None:
+                    db.session.add(users_api)
+                    db.session.commit()
+            except:
+                return redirect('/admin_page/about_api')
+    else:
+        return redirect('/admin')
+    return render_template('giving_api_access.html', clients=User.query.all(), apis=API.query.all())
 
 
 @app.route('/admin_page/file_manager/<int:uid>')
