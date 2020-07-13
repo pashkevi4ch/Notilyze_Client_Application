@@ -14,7 +14,7 @@
         <button class="btn btn-warning btn-lg btn-block" type="submit">Submit</button>
       </form>
 <h5>Status code: {{ status_code }}</h5>
-<h5>Respond:
+<h5>Respond: {{error_message}}
     {% for el in respond %}
     <h5>{{el.name}}: {{el.value}}</h5>
     {% endfor %}

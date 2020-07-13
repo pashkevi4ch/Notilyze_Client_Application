@@ -188,10 +188,12 @@ def api(uid: int, aid: int):
                             f'{api.href}',
                             headers=headers, data=data)
                     result = json.loads(t_response.text)["outputs"]
-                    return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
+                    return render_template('api.html', error_message="", inputs=inputs, email=user.e_mail, user=user,
                                            status_code=str(t_response.status_code), respond=result)
             except:
-                return render_template('error.html', error=traceback.format_exc())
+                return render_template('api.html', error_message="Seems like you've entered invalid credentials",
+                                       inputs=inputs, email=user.e_mail, user=user,
+                                       status_code="", respond="")
         return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code="", respond="")
     else:
         return redirect('/signin')
