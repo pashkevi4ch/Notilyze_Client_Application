@@ -65,7 +65,7 @@ class ApiUser(db.Model):
 
 class API(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    input_fields = db.Column(db.String, nullable=False)
+    input_fields = db.Column(db.String, nullable=True)
     href = db.Column(db.String(400), nullable=False)
 
 
@@ -161,11 +161,14 @@ def api(uid: int, aid: int):
                     data = '{"inputs": [{"name": "ID","value": ' + f'{str(api_id)}' + '}]}'
 
                     response = requests.post(
-                            'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
+                            api.href,
                             headers=headers, data=data)
                     result = json.loads(response.text)["outputs"]
-                    return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code),
-                                           respond=result)
+                    result_str = ''
+                    for i in result:
+                        result_str += i["name"] + ' ' + i["value"] + '\n'
+                    return render_template('api.html', email=user.e_mail, user=user,
+                                           status_code=str(response.status_code),respond=result_str)
             except:
                 return render_template('api.html', email=user.e_mail, user=user, status_code='error',
                                        respond="Seems like you've entered invalid id.")
