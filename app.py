@@ -172,21 +172,27 @@ def api(uid: int, aid: int):
                     data_from_forms = ''
                     for i in inputs:
                         if str(request.form[i]).isdecimal():
-                            data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
+                            if i == inputs[len(inputs) - 1]:
+                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "}"
+                            else:
+                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
                         else:
-                            data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
+                            if i == inputs[len(inputs) - 1]:
+                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "}"
+                            else:
+                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
                     data = '{"inputs": [' + f'{data_from_forms}' + ']}'
 
-                    response = requests.post(
-                            api.href,
+                    t_response = requests.post(
+                            f'{api.href}',
                             headers=headers, data=data)
-                    result = json.loads(response.text)["outputs"]
+                    result = json.loads(t_response.text)["outputs"]
                     return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
-                                           status_code=str(response.status_code), respond=result)
+                                           status_code=str(t_response.status_code), respond=result)
             except:
                 return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code='error',
                                        respond="Seems like you've entered invalid credentials.")
-        return render_template('api.html', email=user.e_mail, user=user, status_code="", respond="")
+        return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code="", respond="")
     else:
         return redirect('/signin')
 
