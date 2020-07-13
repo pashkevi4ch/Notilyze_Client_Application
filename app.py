@@ -363,12 +363,30 @@ def removing_access():
         return redirect('/admin')
 
 
+@app.route('/admin_page/remove_api_access')
+def removing_api_access():
+    if a.verificated:
+        return render_template('remove_api_access.html', users=User.query.all())
+    else:
+        return redirect('/admin')
+
+
 @app.route('/admin_page/remove_access/<int:uid>')
 def accesses(uid: int):
     if a.verificated:
         username = User.query.filter_by(id=uid).first().e_mail
         users_reports = Report.query.filter(UsersReport.user_id == uid).filter(Report.id == UsersReport.report_id).all()
         return render_template('removing_accesses.html', username=username, uid=uid, reports=users_reports)
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/remove_api_access/<int:uid>')
+def api_accesses(uid: int):
+    if a.verificated:
+        username = User.query.filter_by(id=uid).first().e_mail
+        users_apis = API.query.filter(ApiUser.user_id == uid).filter(API.id == ApiUser.api_id).all()
+        return render_template('removing_api_accesses.html', username=username, uid=uid, reports=users_apis)
     else:
         return redirect('/admin')
 
@@ -382,6 +400,21 @@ def remove(uid: int, rid: int):
             db.session.delete(user_report)
             db.session.commit()
             return redirect(f'/admin_page/remove_access/{uid}')
+        except:
+            return render_template('unsuccessful_removing.html')
+    else:
+        return redirect('/admin')
+
+
+@app.route('/admin_page/remove_api_access/<int:uid>/<int:aid>')
+def remove_api(uid: int, aid: int):
+    if a.verificated is True:
+        try:
+            user_api = ApiUser.query.filter_by(user_id=uid) \
+                .filter_by(api_id=aid).first()
+            db.session.delete(user_api)
+            db.session.commit()
+            return redirect(f'/admin_page/remove_api_access/{uid}')
         except:
             return render_template('unsuccessful_removing.html')
     else:
