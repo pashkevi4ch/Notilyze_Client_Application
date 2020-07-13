@@ -58,6 +58,11 @@ class UsersReport(db.Model):
         return '<ReportUser %r>' % self.report_id
 
 
+class ApiUser(db.Model):
+    api_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
+
+
 class API(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     input_fields = db.Column(db.String, nullable=False)
@@ -122,10 +127,11 @@ def client(uid: int):
         return redirect('/signin')
 
 
-@app.route("/client_page/<int:uid>/api", methods=['GET', 'POST'])
-def api(uid: int):
+@app.route("/client_page/<int:uid>/<int:aid>/api", methods=['GET', 'POST'])
+def api(uid: int, aid: int):
     if v.verificated is True and v.id == uid:
         user = User.query.filter_by(id=uid).first()
+        api = API.query.filter_by(id=aid).first()
         if request.method == 'POST':
             try:
                 headers = {
@@ -157,7 +163,7 @@ def api(uid: int):
                     response = requests.post(
                             'https://devanalytics-notilyze.saasnow.com/microanalyticScore/modules/HelloWorld/steps/execute',
                             headers=headers, data=data)
-                    result = json.loads(response.text)["outputs"][0]["value"]
+                    result = json.loads(response.text)["outputs"]
                     return render_template('api.html', email=user.e_mail, user=user, status_code=str(response.status_code),
                                            respond=result)
             except:
