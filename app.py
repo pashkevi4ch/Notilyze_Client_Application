@@ -305,7 +305,7 @@ def about_access():
 
 
 @app.route('/admin_page/about_api', methods=['GET', 'POST'])
-def about_access():
+def about_api():
     if a.verificated:
         if request.method == 'POST':
             try:
@@ -321,7 +321,7 @@ def about_access():
                 return redirect('/admin_page/about_api')
     else:
         return redirect('/admin')
-    return render_template('giving_access.html', clients=User.query.all(), reports=Report.query.all())
+    return render_template('giving_api_access.html', clients=User.query.all(), apis=API.query.all())
 
 
 @app.route("/upload", methods=['GET', 'POST'])
