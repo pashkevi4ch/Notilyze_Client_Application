@@ -387,7 +387,7 @@ def api_accesses(uid: int):
         user = User.query.filter_by(id=uid).first()
         username = user.e_mail
         users_apis = API.query.filter(ApiUser.user_id == user.id).filter(API.id == ApiUser.api_id)
-        return render_template('removing_api_accesses.html', username=username, uid=uid, reports=users_apis)
+        return render_template('removing_api_accesses.html', username=username, uid=uid, apis=users_apis)
     else:
         return redirect('/admin')
 
