@@ -298,6 +298,26 @@ def about_access():
     return render_template('giving_access.html', clients=User.query.all(), reports=Report.query.all())
 
 
+@app.route('/admin_page/about_api', methods=['GET', 'POST'])
+def about_access():
+    if a.verificated:
+        if request.method == 'POST':
+            try:
+                chose_user = request.form['client_id']
+                chose_api = request.form['api_id']
+                users_api = ApiUser(user_id=chose_user, api_id=chose_api)
+                check = ApiUser.query.filter_by(user_id=users_api.user_id)\
+                    .filter_by(api_id=users_api.api_id).first()
+                if check is None:
+                    db.session.add(users_api)
+                    db.session.commit()
+            except:
+                return redirect('/admin_page/about_api')
+    else:
+        return redirect('/admin')
+    return render_template('giving_access.html', clients=User.query.all(), reports=Report.query.all())
+
+
 @app.route("/upload", methods=['GET', 'POST'])
 def upload():
     if v.verificated is True:
