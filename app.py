@@ -312,7 +312,7 @@ def about_api():
                 chose_user = request.form['client_id']
                 chose_api = request.form['api_id']
                 users_api = ApiUser(user_id=chose_user, api_id=chose_api)
-                check = ApiUser.query.filter_by(user_id=users_api.user_id)\
+                check = ApiUser.query.filter_by(user_id=users_api.user_id) \
                     .filter_by(api_id=users_api.api_id).first()
                 if check is None:
                     db.session.add(users_api)
