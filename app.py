@@ -128,7 +128,7 @@ def client(uid: int):
         return redirect('/signin')
 
 
-@app.route("/client_page/apis")
+@app.route("/client_page/<int:uid>/apis")
 def apis(uid: int):
     if v.verificated is True and v.id == uid:
         user = User.query.filter_by(id=uid).first()
