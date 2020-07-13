@@ -145,53 +145,49 @@ def api(uid: int, aid: int):
         api = API.query.filter_by(id=aid).first()
         inputs = str(api.input_fields).split(',')
         if request.method == 'POST':
-            try:
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+            }
+
+            data = {
+                'grant_type': 'password',
+                'username': 'hro',
+                'password': 'o5PyWC@Mis85'
+            }
+
+            response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token',
+                                     headers=headers,
+                                     data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
+            if response.status_code is 200:
+                result_token = json.loads(response.text)["access_token"]
+
                 headers = {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Accept': 'application/json',
+                    'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + result_token,
                 }
 
-                data = {
-                    'grant_type': 'password',
-                    'username': 'hro',
-                    'password': 'o5PyWC@Mis85'
-                }
-
-                response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token',
-                                         headers=headers,
-                                         data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
-                if response.status_code is 200:
-                    result_token = json.loads(response.text)["access_token"]
-
-                    headers = {
-                        'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + result_token,
-                    }
-
-                    data_from_forms = ''
-                    for i in inputs:
-                        if str(request.form[i]).isdecimal():
-                            if i == inputs[len(inputs) - 1]:
-                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "}"
-                            else:
-                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
+                data_from_forms = ''
+                for i in inputs:
+                    if str(request.form[i]).isdecimal():
+                        if i == inputs[len(inputs) - 1]:
+                            data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "}"
                         else:
-                            if i == inputs[len(inputs) - 1]:
-                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "}"
-                            else:
-                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
-                    data = '{"inputs": [' + f'{data_from_forms}' + ']}'
+                            data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
+                    else:
+                        if i == inputs[len(inputs) - 1]:
+                            data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "}"
+                        else:
+                            data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
+                data = '{"inputs": [' + f'{data_from_forms}' + ']}'
 
-                    t_response = requests.post(
-                            f'{api.href}',
-                            headers=headers, data=data)
-                    result = json.loads(t_response.text)["outputs"]
-                    return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
-                                           status_code=str(t_response.status_code), respond=result)
-            except:
-                return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code='error',
-                                       respond="Seems like you've entered invalid credentials.")
+                t_response = requests.post(
+                        f'{api.href}',
+                        headers=headers, data=data)
+                result = json.loads(t_response.text)["outputs"]
+                return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
+                                       status_code=str(t_response.status_code), respond=result)
         return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code="", respond="")
     else:
         return redirect('/signin')
