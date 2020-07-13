@@ -9,6 +9,7 @@ import app_config
 import uuid
 import json
 import requests
+import traceback
 
 
 app = Flask(__name__)
@@ -145,49 +146,52 @@ def api(uid: int, aid: int):
         api = API.query.filter_by(id=aid).first()
         inputs = str(api.input_fields).split(',')
         if request.method == 'POST':
-            headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json',
-            }
-
-            data = {
-                'grant_type': 'password',
-                'username': 'hro',
-                'password': 'o5PyWC@Mis85'
-            }
-
-            response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token',
-                                     headers=headers,
-                                     data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
-            if response.status_code is 200:
-                result_token = json.loads(response.text)["access_token"]
-
+            try:
                 headers = {
-                    'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + result_token,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json',
                 }
 
-                data_from_forms = ''
-                for i in inputs:
-                    if str(request.form[i]).isdecimal():
-                        if i == inputs[len(inputs) - 1]:
-                            data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "}"
-                        else:
-                            data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
-                    else:
-                        if i == inputs[len(inputs) - 1]:
-                            data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "}"
-                        else:
-                            data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
-                data = '{"inputs": [' + f'{data_from_forms}' + ']}'
+                data = {
+                    'grant_type': 'password',
+                    'username': 'hro',
+                    'password': 'o5PyWC@Mis85'
+                }
 
-                t_response = requests.post(
-                        f'{api.href}',
-                        headers=headers, data=data)
-                result = json.loads(t_response.text)["outputs"]
-                return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
-                                       status_code=str(t_response.status_code), respond=result)
+                response = requests.post('https://devanalytics-notilyze.saasnow.com/SASLogon/oauth/token',
+                                         headers=headers,
+                                         data=data, auth=('hroapp', 'P6UzU5C4Wr8c'))
+                if response.status_code is 200:
+                    result_token = json.loads(response.text)["access_token"]
+
+                    headers = {
+                        'Accept': 'application/vnd.sas.microanalytic.module.step.output+json,application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + result_token,
+                    }
+
+                    data_from_forms = ''
+                    for i in inputs:
+                        if str(request.form[i]).isdecimal():
+                            if i == inputs[len(inputs) - 1]:
+                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "}"
+                            else:
+                                data_from_forms += "{" + f'"name": "{i}", "value": {str(request.form[i])}' + "},"
+                        else:
+                            if i == inputs[len(inputs) - 1]:
+                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "}"
+                            else:
+                                data_from_forms += "{" + f'"name": "{i}", "value": "{str(request.form[i])}"' + "},"
+                    data = '{"inputs": [' + f'{data_from_forms}' + ']}'
+
+                    t_response = requests.post(
+                            f'{api.href}',
+                            headers=headers, data=data)
+                    result = json.loads(t_response.text)["outputs"]
+                    return render_template('api.html', inputs=inputs, email=user.e_mail, user=user,
+                                           status_code=str(t_response.status_code), respond=result)
+            except:
+                return render_template('error.html', error=traceback.format_exc())
         return render_template('api.html', inputs=inputs, email=user.e_mail, user=user, status_code="", respond="")
     else:
         return redirect('/signin')
