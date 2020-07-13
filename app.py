@@ -384,8 +384,9 @@ def accesses(uid: int):
 @app.route('/admin_page/remove_api_access/<int:uid>')
 def api_accesses(uid: int):
     if a.verificated:
-        username = User.query.filter_by(id=uid).first().e_mail
-        users_apis = API.query.filter(ApiUser.user_id == uid).filter(API.id == ApiUser.api_id).all()
+        user = User.query.filter_by(id=uid).first()
+        username = user.e_mail
+        users_apis = API.query.filter(ApiUser.user_id == user.id).filter(API.id == ApiUser.api_id)
         return render_template('removing_api_accesses.html', username=username, uid=uid, reports=users_apis)
     else:
         return redirect('/admin')
