@@ -77,8 +77,8 @@ def sign_in():
     # Technically we could use empty list [] as scopes to do just sign in,
     # here we choose to also collect end user consent upfront
     auth_url = f'https://login.microsoftonline.com/a111daf6-3065-41cb-9b63-ab81be54bafd/oauth2/v2.0/authorize?' \
-        f'client_id=75c6abe9-3615-4375-bfe9-2866f051617d&response_type=code&' \
-        f'redirect_uri=http://localhost:5000/getAToken&' \
+        f'client_id=52e6e094-6eb2-4dfa-8726-2b6843bd3205&response_type=code&' \
+        f'redirect_uri=https://notilyzeclientapp.herokuapp.com/getAToken&' \
         f'scope=User.ReadBasic.All+offline_access+openid+profile&state={session["state"]}'
     return render_template('sign_in.html', auth_url=auth_url)
 
@@ -161,7 +161,7 @@ def authorized():
         result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
             request.args['code'],
             scopes=app_config.SCOPE,
-            redirect_uri='http://localhost:5000/getAToken')
+            redirect_uri='https://notilyzeclientapp.herokuapp.com/getAToken')
         session["user"] = result.get("id_token_claims")
         _save_cache(cache)
     return redirect('/client_page')
